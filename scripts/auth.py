@@ -1,9 +1,11 @@
 """Module for parsing authorization details."""
 
+import base64
 import requests
 import secrets
+import urllib
 import webbrowser
-import base64
+
 
 def parse_file(secret_file):
     """Returns access token for authorizing spotify API requests.
@@ -30,23 +32,40 @@ def generate_state(nbytes=32):
 def get_auth_code(client_id, redirect_uri='https://localhost:8082'):
     """Requests an authorization code from spotify."""
     endpoint = 'https://accounts.spotify.com/authorize'
+    state = generate_state()
     params = {'client_id': client_id,
               'response_type': 'code',
               'redirect_uri': redirect_uri,
-              'state': generate_state()}
+              'state': state}
     # build url with endpoint and params
     url = requests.Request('GET', endpoint, params=params).prepare().url
-    #print(url.head)
     webbrowser.open(url)
-    return None
+    auth_code_url = input("Paste the auth code url here: ")
+    reponse_params = _parse_auth_code_url(auth_code_url)
+    if 'state' in response_params:
+        assert response_params['state'] == state
+    return response_params['code']
 
-def get_access_token(auth_code):
+
+def _parse_auth_code_url(auth_code_url):
+    """TODO
+    example input: https://example.com/?code=CODE
+    """
+    url_query = urllib.parse.urlparse(auth_code_url).query
+    return dict(p.split('=') for p in url_query.split('&'))
+
+
+def _encode_access_key(client_id, client_secret):
+    utf_secret = f"{client_id}:{client_secret}".encode('UTF-8')
+    return base64.standard_b64encode(utf_secret).decode('ascii')
+
+
+def get_access_token(auth_code, client_id, client_secret):
     """Exchange authorization code with access token."""
     endpoint = 'https://accounts.spotify.com/api/token'
     params = {'grant_type': 'authorization_code',
               'code': auth_code,
-              'redirect_uri': 'https://localhost:8082' }
-    header = {'Authorization': 'Basic ' + base64.standard_b64encode("{}:{}".format(client_id, client_secret).encode('UTF-8')).decode('ascii')}
-    response = requests.post(endpoint, params=params, headers=header)
-    json_response = response.json()
-    return json_response['access_token']
+              'redirect_uri': 'https://localhost:8082'}
+    header = {'Authorization': _encode_access_key(client_id, client_secret)}
+    #TODO
+    return None

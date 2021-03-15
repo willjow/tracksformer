@@ -7,7 +7,7 @@ import urllib
 import webbrowser
 
 
-def parse_file(secret_file):
+def _parse_secret_file(secret_file):
     """Returns access token for authorizing spotify API requests.
 
     Parameters
@@ -21,15 +21,15 @@ def parse_file(secret_file):
         client_secret = sf.readline().split(':')[1]
         if client_id and client_secret:
             return client_id, client_secret
-    return None
+    raise Exception("Could not parse secret file.")
 
 
-def generate_state(nbytes=32):
+def _generate_state(nbytes=32):
     """Generates a state string for OAuth."""
     return secrets.token_urlsafe(nbytes)
 
 
-def get_auth_code(client_id, redirect_uri='https://localhost:8082'):
+def _get_auth_code(client_id, redirect_uri='https://localhost:8082'):
     """Requests an authorization code from spotify."""
     endpoint = 'https://accounts.spotify.com/authorize'
     state = generate_state()
@@ -60,7 +60,7 @@ def _encode_access_key(client_id, client_secret):
     return base64.standard_b64encode(utf_secret).decode('ascii')
 
 
-def get_access_token(auth_code, client_id, client_secret):
+def _get_access_token(auth_code, client_id, client_secret):
     """Exchange authorization code with access token."""
     endpoint = 'https://accounts.spotify.com/api/token'
     params = {'grant_type': 'authorization_code',
@@ -69,3 +69,9 @@ def get_access_token(auth_code, client_id, client_secret):
     header = {'Authorization': _encode_access_key(client_id, client_secret)}
     #TODO
     return None
+
+
+def authorize(secret_file):
+    client_id, client_secret = _parse_secret_file(secret_file)
+    auth_code = _get_auth_code(client_id)
+    access_token = _get_access_token(auth_code, client_id, client_secret)

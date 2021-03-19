@@ -32,7 +32,7 @@ def _generate_state(nbytes=32):
 def _get_auth_code(client_id, redirect_uri='https://localhost:8082'):
     """Requests an authorization code from spotify."""
     endpoint = 'https://accounts.spotify.com/authorize'
-    state = generate_state()
+    state = _generate_state()
     params = {'client_id': client_id,
               'response_type': 'code',
               'redirect_uri': redirect_uri,
@@ -41,7 +41,7 @@ def _get_auth_code(client_id, redirect_uri='https://localhost:8082'):
     url = requests.Request('GET', endpoint, params=params).prepare().url
     webbrowser.open(url)
     auth_code_url = input("Paste the auth code url here: ")
-    reponse_params = _parse_auth_code_url(auth_code_url)
+    response_params = _parse_auth_code_url(auth_code_url)
     if 'state' in response_params:
         assert response_params['state'] == state
     return response_params['code']
@@ -66,8 +66,10 @@ def _get_access_token(auth_code, client_id, client_secret):
     params = {'grant_type': 'authorization_code',
               'code': auth_code,
               'redirect_uri': 'https://localhost:8082'}
-    header = {'Authorization': _encode_access_key(client_id, client_secret)}
+    header = {'Authorization': 'Basic {}'.format(_encode_access_key(client_id, client_secret))}
     #TODO
+    response = requests.post(endpoint, data=params, headers=header)
+    print(response)
     return None
 
 

@@ -1,5 +1,7 @@
 """Module for searching spotify for tracks."""
 
+import auth
+
 import requests
 
 def track_search(artist, title, filters=None):
@@ -19,5 +21,5 @@ def track_search(artist, title, filters=None):
             'type': 'track'},
     headers={'Accept': 'application/json',
              'Content-Type': 'application/json',
-             'Authorization': }
+             'Authorization': auth.authorize()}
     response = requests.get(endpoint, params, headers=headers)

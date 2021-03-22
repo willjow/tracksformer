@@ -52,7 +52,8 @@ class Authorizer():
     def _encode_access_key(client_id, client_secret):
         """Returns the base64 encoding of the client_id and client_secret."""
         utf_secret = f"{client_id}:{client_secret}".encode('UTF-8')
-        return base64.standard_b64encode(utf_secret).decode('ascii')
+        base64_secret = base64.standard_b64encode(utf_secret).decode('ascii')
+        return f"Basic {base64_secret}"
 
     def _parse_secret_file(self, secret_file):
         """Reads secret file to obtain client_id and client_secret.
@@ -111,6 +112,9 @@ class Authorizer():
         response_json = response.json()
         self.access_token = response_json['access_token']
         self.token_type = response_json['token_type']
-        self.token_scope = response_json['scope']
         self.token_expires_in = response_json['expires_in']
         self.refresh_token = response_json['refresh_token']
+        if 'scope' in response_json:
+            self.token_scope = response_json['scope']
+        else:
+            self.token_scope = None

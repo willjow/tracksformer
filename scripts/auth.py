@@ -67,13 +67,12 @@ def _get_access_token(auth_code, client_id, client_secret):
               'code': auth_code,
               'redirect_uri': 'https://localhost:8082'}
     header = {'Authorization': 'Basic {}'.format(_encode_access_key(client_id, client_secret))}
-    #TODO
     response = requests.post(endpoint, data=params, headers=header)
-    print(response)
-    return None
+    return response.json()
 
 
 def authorize(secret_file):
     client_id, client_secret = _parse_secret_file(secret_file)
     auth_code = _get_auth_code(client_id)
     access_token = _get_access_token(auth_code, client_id, client_secret)
+    return access_token

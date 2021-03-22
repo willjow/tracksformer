@@ -65,8 +65,8 @@ class Authorizer():
             client secret.
         """
         with open(secret_file) as sf:
-            self.client_id = sf.readline()
-            self.client_secret = sf.readline()
+            self.client_id = sf.readline().rstrip('\n')
+            self.client_secret = sf.readline().rstrip('\n')
 
     def _generate_state(nbytes=32):
         """Generates a state string for OAuth."""

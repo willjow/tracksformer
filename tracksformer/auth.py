@@ -41,7 +41,7 @@ class Authorizer():
     AUTHORIZE_ENDPOINT = 'https://accounts.spotify.com/authorize'
     TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token'
 
-    def __init__(secret_file, redirect_uri='https://localhost:8082'):
+    def __init__(self, secret_file, redirect_uri='https://localhost:8082'):
         self.redirect_uri = redirect_uri
         self._parse_secret_file(secret_file)
         self.base64_secret = Authorizer._encode_access_key(self.client_id,
@@ -65,12 +65,8 @@ class Authorizer():
             client secret.
         """
         with open(secret_file) as sf:
-            client_id = sf.readline()[:-1].split(':')[1]
-            client_secret = sf.readline().split(':')[1]
-            if client_id and client_secret:
-                self.client_id = client_id
-                self.client_secret = client_secret
-        raise Exception("Could not parse secret file.")
+            self.client_id = sf.readline()
+            self.client_secret = sf.readline()
 
     def _generate_state(nbytes=32):
         """Generates a state string for OAuth."""
